@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Подкатегории{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Подкатегории</h2>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for subcategory in subcategory_list %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ subcategory.name }}</h5>
+                <a href="{% url 'pages:products' status=request.resolver_match.kwargs.status category_slug=request.resolver_match.kwargs.category_slug subcategory_slug=subcategory.slug %}"
+                   class="btn btn-secondary">Перейти</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Товары{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Товары</h2>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for product in products_list %}
+    <div class="col">
+        <div class="card h-100">
+            <img src="{{ product.image.url }}" class="img-fluid me-4" style="max-width: 150px;">
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description }}</p>
+                <a href="{% url 'pages:product_detail' status=request.resolver_match.kwargs.status category_slug=request.resolver_match.kwargs.category_slug subcategory_slug=request.resolver_match.kwargs.subcategory_slug pk=product.pk%}"
+                   class="btn btn-info">Подробнее</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

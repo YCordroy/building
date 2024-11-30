@@ -1,0 +1,8 @@
+.venv
+.idea
+.env
+/static/
+/media/
+/image_folder/
+/building_materials/media/
+/building_materials/static/

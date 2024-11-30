@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center flex-grow-1 mx-4">{{ product.name}}</h1>
+  <!-- Навигационная цепочка -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Главная</a></li>
+      <li class="breadcrumb-item"><a href="#">Сантехника для ванной</a></li>
+      <li class="breadcrumb-item"><a href="#">Полотенцесушители</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+  </nav>
+<div class="row">
+    <!-- Изображение -->
+    <div class="col-md-6">
+        <img src="{{ product.image.url }}" class="img-fluid" style="max-width: 300px;">
+    </div>
+
+    <!-- Характеристики -->
+    <div class="col-md-6">
+        <p style="font-size: 25px"><strong> {{ product.price }} ₽</strong></p>
+
+        <h4>Основные характеристики:</h4>
+        <table class="table table-bordered">
+            <tbody>
+            {% for key, value in product.params.items %}
+            <tr>
+                <th>{{ key }}</th>
+                <td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% endblock %}
