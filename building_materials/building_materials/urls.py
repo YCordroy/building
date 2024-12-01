@@ -20,7 +20,7 @@ from django.conf.urls.static import static
 from django.urls import path, include
 import debug_toolbar
 
-handler404 = 'pages.views.page_not_found'
+handler404 = 'pages.views.custom_404'
 handler500 = 'pages.views.server_error'
 
 urlpatterns = [

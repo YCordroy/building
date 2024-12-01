@@ -1,7 +1,11 @@
 {% extends "base.html" %}
+
 {% block title %}Страница не найдена{% endblock %}
+
 {% block content %}
-  <h1>Страница не найдена</h1>
-  <p>Страницы с адресом {{ request.build_absolute_uri }} не существует!</p>
-  <a href="{% url 'pages:index' %}">Вернуться на главную</a>
+<div class="text-center mt-5">
+  <h1>{{ error_message }}</h1>
+  <p>Попробуйте воспользоваться предложением ниже:</p>
+  <a href="{{ link_url }}" class="btn btn-primary mt-3">{{ link_text }}</a>
+</div>
 {% endblock %}
