@@ -43,3 +43,4 @@ class ProductAdmin(admin.ModelAdmin):
         'in_stock'
     )
 
+    list_filter = ('subcategory',)

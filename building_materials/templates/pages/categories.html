@@ -14,15 +14,11 @@
                     <img src="{{ category.image.url }}" class="img-fluid" style="max-width: 50px;">
                 </div>
                 <p class="card-text">
-                    {% if category.subcategories.all %}
-                        <ul>
-                            {% for subcategory in category.subcategories.all %}
-                                <li>{{ subcategory.name }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        Нет подкатегорий
-                    {% endif %}
+                    <ul style="list-style-type: none;">
+                        {% for subcategory in category.filtered_subcategories %}
+                            <li><a href="{% url 'pages:products' status=request.resolver_match.kwargs.status category_slug=category.slug subcategory_slug=subcategory.slug%}">{{ subcategory.name }}</a></li>
+                        {% endfor %}
+                    </ul>
                 </p>
                 <a href="{% url 'pages:subcategories' status=request.resolver_match.kwargs.status category_slug=category.slug %}"
                    class="btn btn-primary">Перейти</a>

@@ -1,0 +1,14 @@
+{% if not request.path == '/' %}
+<div class="sidebar">
+    <button class="toggle-btn" id="toggle-btn">&#9776;</button>
+    <nav id="category-nav" class="category-nav">
+        <ul>
+            {% for category in category_list %}
+            <li><a href="{% url 'pages:subcategories' status=request.resolver_match.kwargs.status category_slug=category.slug %}">
+                {{ category.name }}
+                </a></li>
+            {% endfor %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
