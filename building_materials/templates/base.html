@@ -32,16 +32,18 @@
 </head>
   <body>
     {% include "includes/header.html" %}
-    <div class="wrapper">
-      <div class="layout">
-        <div class="sidebar">
-          {% include "includes/sidebar.html" %}
-        </div>
-        <div class="navigation">
-          {% include "includes/navigation.html" %}
+    {% if not error %}
+      <div class="wrapper">
+        <div class="layout">
+          <div class="sidebar">
+            {% include "includes/sidebar.html" %}
+          </div>
+          <div class="navigation">
+            {% include "includes/navigation.html" %}
+          </div>
         </div>
       </div>
-    </div>
+    {% endif %}
     <main class="container my-4">
         {% block content %}
         {% endblock %}

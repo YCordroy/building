@@ -1,14 +1,28 @@
 <header class="bg-dark text-white py-3">
-        <div class="container d-flex justify-content-between align-items-center">
-            {% if request.path == '/' %}
+    <div class="container d-flex justify-content-between align-items-center">
+        {% if request.path == '/' %}
+        <h2>Название фирмы</h2>
+        {% else %}
+        <a href="{% url 'pages:index' %}" class="company-name text-white text-decoration-none">
             <h2>Название фирмы</h2>
-            {% else %}
-            <a href="{% url 'pages:index' %}" class="company-name">
-                <h2>Название фирмы</h2>
-            </a>
+        </a>
+            {% if not error %}
+                <form action="{% url 'pages:search' status=request.resolver_match.kwargs.status%}" method="get" class="d-flex me-4">
+                    <input
+                        type="text"
+                        name="query"
+                        class="form-control me-2"
+                        placeholder="Найти товар..."
+                        required>
+                    <button type="submit" class="btn btn-outline-light">Поиск</button>
+                </form>
             {% endif %}
-            <div class="contact-info">
-                <span class="fs-5">📞 +7 (123) 456-78-90</span>
-            </div>
+        {% endif %}
+
+
+        <!-- Контактная информация -->
+        <div class="contact-info">
+            <span class="fs-5">📞 +7 (123) 456-78-90</span>
         </div>
-    </header>
+    </div>
+</header>
