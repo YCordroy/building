@@ -50,7 +50,9 @@ class Product(VisibleModel, ImageDescriptionModel):
         related_name='product'
     )
     params = models.JSONField(
-        verbose_name='Параметры'
+        verbose_name='Параметры',
+        null=True,
+        blank=True
     )
     price = models.DecimalField(
         verbose_name='Цена',

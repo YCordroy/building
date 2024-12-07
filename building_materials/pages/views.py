@@ -1,4 +1,6 @@
+import re
 from http import HTTPStatus
+from urllib.parse import urlencode
 
 from django.db.models import Q
 from django.http import Http404
@@ -6,7 +8,15 @@ from django.shortcuts import render, get_object_or_404
 
 from product.models import Product, Subcategory, Category
 from django.views.generic import ListView, DetailView
+from .forms import DynamicFilterForm
 
+
+# Сайдбар - Работа сайдбара с категориями
+# Отображается на всех страницах, кроме стартовой и страниц ошибок
+
+# Навигация - Навигация по хлебным крошкам
+# Начинает работать после выбора на стартовой
+# Реализовано через разбивание url во вьюхах
 
 def custom_404(request, exception):
     context = {
@@ -43,13 +53,13 @@ def custom_404(request, exception):
             context["link_text"] = 'Заказать товар'
             context["link_url"] = f'/on_order/'
 
-    return render(request, "pages/404.html", context, status=HTTPStatus.NOT_FOUND)
+    return render(request, "errors/404.html", context, status=HTTPStatus.NOT_FOUND)
 
 
 def csrf_failure(request, reason=''):
     return render(
         request,
-        'pages/403csrf.html',
+        'errors/403csrf.html',
         status=HTTPStatus.FORBIDDEN,
         context={'error': True}
     )
@@ -58,7 +68,7 @@ def csrf_failure(request, reason=''):
 def server_error(request, exception=None):
     return render(
         request,
-        'pages/500.html',
+        'errors/500.html',
         status=HTTPStatus.INTERNAL_SERVER_ERROR,
         context={'error': True}
     )
@@ -70,13 +80,11 @@ def index(request):
 
 class CategoryListView(ListView):
     model = Category
-    template_name = 'pages/categories.html'
+    template_name = 'pages/category_list.html'
     context_object_name = 'category_list'
 
     def get_queryset(self):
-        status = self.kwargs['status']
-        status_check(status)
-        in_stock = True if status == 'in_stock' else False
+        in_stock = status_check(self)
 
         return Category.objects.filter(
             subcategories__product__in_stock=in_stock,
@@ -87,9 +95,7 @@ class CategoryListView(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        status = self.kwargs['status']
-        status_check(status)
-        in_stock = True if status == 'in_stock' else False
+        in_stock = status_check(self)
         # Навигация
         context['breadcrumbs'] = [
             {'name': 'Главная страница', 'url': '/'},
@@ -107,13 +113,11 @@ class CategoryListView(ListView):
 
 class SubcategoryListView(ListView):
     model = Subcategory
-    template_name = 'pages/subcategories.html'
+    template_name = 'pages/subcategory_list.html'
     context_object_name = 'subcategory_list'
 
     def get_queryset(self):
-        status = self.kwargs['status']
-        status_check(status)
-        in_stock = True if status == 'in_stock' else False
+        in_stock = status_check(self)
         category_slug = self.kwargs['category_slug']
         category = get_object_or_404(
             Category,
@@ -146,34 +150,65 @@ class SubcategoryListView(ListView):
         ]
         # Сайдбар
         context['sidebar_list'] = get_categories()
+
         return context
 
 
 class ProductListView(ListView):
     model = Product
-    template_name = 'pages/products.html'
+    template_name = 'pages/product_list.html'
     context_object_name = 'products_list'
+    paginate_by = 10
+
+    def setup(self, request, *args, **kwargs) -> None:
+        # Убираем параметр page из запроса
+        query_params = request.GET.copy()
+        query_params.pop("page", None)  # Убираем параметр page, если он есть
+
+        # Перезаписываем строку запроса без параметра page
+        request.META["QUERY_STRING"] = urlencode(query_params, doseq=True)
+        return super().setup(request, *args, **kwargs)
+
+    def get_paginate_by(self, queryset):
+        """Возвращаем количество товаров на странице из GET-параметра `page_size`"""
+        page_size = self.request.GET.get('page_size', 10)
+        try:
+            page_size = int(page_size)
+        except ValueError:
+            page_size = 10  # если параметр некорректный, используем 10 по умолчанию
+        return page_size
 
     def get_queryset(self):
-        status = self.kwargs['status']
-        status_check(status)
-        in_stock = True if status == 'in_stock' else False
+        in_stock = status_check(self)
         subcategory = get_object_or_404(
             Subcategory,
             slug=self.kwargs['subcategory_slug'],
             is_visible=True,
             category__is_visible=True
         )
-        if not (data := subcategory.product.filter(
-                in_stock=in_stock,
-                is_visible=True
-        )):
+        queryset = subcategory.product.filter(
+            in_stock=in_stock,
+            is_visible=True
+        )
+
+        # Применение фильтров на основе параметров, переданных через GET
+        filters = self.request.GET
+        for key, value in filters.items():
+            if value and key != 'page':
+                # Фильтрация по полям в JSONField
+                queryset = queryset.filter(
+                    Q(params__contains={key: value})
+                )
+
+        if not queryset:
             raise Http404('Товары не найдены')
-        return data
+
+        return queryset
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         status = self.kwargs['status']
+        in_stock = status_check(self)
         subcategory = get_object_or_404(
             Subcategory,
             slug=self.kwargs['subcategory_slug']
@@ -186,6 +221,16 @@ class ProductListView(ListView):
             {'name': category, 'url': f'/{status}/{self.kwargs['category_slug']}'},
             {'name': subcategory.name, 'url': None}
         ]
+        # Сайдбар с фильтрами
+        filterable_attributes = get_filterable_attributes(
+            subcategory.product.filter(in_stock=in_stock, is_visible=True)
+        )
+        form = DynamicFilterForm(
+            self.request.GET,
+            attributes=filterable_attributes
+        )
+        context['form'] = form
+
         # Сайдбар
         context['sidebar_list'] = get_categories()
 
@@ -197,9 +242,7 @@ class ProductDetailView(DetailView):
     template_name = 'pages/product_detail.html'
 
     def get_object(self, queryset=None):
-        status = self.kwargs['status']
-        in_stock = True if status == 'in_stock' else False
-        status_check(status)
+        in_stock = status_check(self)
         pk = self.kwargs['pk']
         product = get_object_or_404(Product, pk=pk, in_stock=in_stock)
         return product
@@ -226,16 +269,26 @@ class ProductDetailView(DetailView):
 
 
 class SearchListView(ListView):
-    """Правильная работа поиска по сайту в хедере"""
+    """Поиска по сайту в хедере шаблона"""
     model = Product
-    template_name = 'pages/search.html'
+    template_name = 'pages/search_list.html'
     context_object_name = 'search_list'
+    paginate_by = 10
+
+    def setup(self, request, *args, **kwargs) -> None:
+        # Убираем параметр page из запроса
+        query_params = request.GET.copy()
+        query_params.pop("page", None)  # Убираем параметр page, если он есть
+
+        # Перезаписываем строку запроса без параметра page
+        request.META["QUERY_STRING"] = urlencode(query_params, doseq=True)
+        return super().setup(request, *args, **kwargs)
 
     def get_queryset(self):
-        status = self.kwargs['status']
-        status_check(status)
+        # Отдельный поиск в разделах сайта
+        in_stock = status_check(self)
         query = self.request.GET.get('query', '').strip()
-        in_stock = True if status == 'in_stock' else False
+
         if query:
             results = Product.objects.filter(
                 Q(name__icontains=query),
@@ -252,13 +305,16 @@ class SearchListView(ListView):
         context = super().get_context_data(**kwargs)
         # Сайдбар
         context['sidebar_list'] = get_categories()
+
         return context
 
 
-def status_check(status):
+def status_check(self):
     """Проверка статуса в url"""
+    status = self.kwargs['status']
     if not (status in ('in_stock', 'on_order')):
         raise Http404('Необходимо выбрать статус товара: Под заказ или в наличии')
+    return True if status == 'in_stock' else False
 
 
 def get_categories():
@@ -266,3 +322,12 @@ def get_categories():
     return Category.objects.filter(
         is_visible=True,
     ).distinct()
+
+
+def get_filterable_attributes(queryset):
+    """Получение уникальных значений параметров для фильтрации"""
+    attributes = {}
+    for product in queryset.values_list('params', flat=True):
+        for key, value in product.items():
+            attributes.setdefault(key, set()).add(value)
+    return {key: list(values) for key, values in attributes.items()}

@@ -1,0 +1,14 @@
+<div class="col-md-3">
+        <div class="sidebar">
+            <h4>Фильтры</h4>
+            <form method="get">
+                {% for field in form %}
+                    <div class="filter-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Применить</button>
+            </form>
+        </div>
+    </div>
