@@ -3,11 +3,13 @@
 {% block title %}Главная{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column align-items-center">
-    <h1 class="mb-4">Добро пожаловать в наш магазин!</h1>
-    <div class="d-flex">
-        <a href="{% url 'pages:categories' 'in_stock' %}" class="btn btn-primary btn-lg me-3">Товары в наличии</a>
-        <a href="{% url 'pages:categories' 'on_order' %}" class="btn btn-secondary btn-lg">Товары под заказ</a>
+    <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+        <div class="text-center">
+            <h1 class="mb-4">Добро пожаловать в наш магазин!</h1>
+            <div class="d-flex flex-column flex-sm-row justify-content-center">
+                <a href="{% url 'pages:categories' 'in_stock' %}" class="btn btn-gray btn-lg py-4 px-5 mb-3 mb-sm-0 me-sm-3">Товары в наличии</a>
+                <a href="{% url 'pages:categories' 'on_order' %}" class="btn btn-gray btn-lg py-4 px-5">Товары под заказ</a>
+            </div>
+        </div>
     </div>
-</div>
 {% endblock %}

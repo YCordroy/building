@@ -1,12 +1,17 @@
 {% if not request.path == '/' %}
-<div class="sidebar">
-    <button class="toggle-btn" id="toggle-btn">&#9776;</button>
+<div class="main-sidebar" id="sidebar">
+    <!-- Кнопка для сворачивания/разворачивания меню -->
+    <button class="toggle-btn" id="toggle-btn">Категории товаров</button>
+
+    <!-- Меню категорий -->
     <nav id="category-nav" class="category-nav">
         <ul>
             {% for category in sidebar_list %}
-            <li><a href="{% url 'pages:subcategories' status=request.resolver_match.kwargs.status category_slug=category.slug %}">
-                {{ category.name }}
-                </a></li>
+            <li>
+                <a href="{% url 'pages:subcategories' status=request.resolver_match.kwargs.status category_slug=category.slug %}">
+                    {{ category.name }}
+                </a>
+            </li>
             {% endfor %}
         </ul>
     </nav>

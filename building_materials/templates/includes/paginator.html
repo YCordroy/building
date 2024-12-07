@@ -1,4 +1,14 @@
 {% if page_obj.has_other_pages %}
+<form method="get">
+  {{ page_size_form.as_p }}  <!-- Форма для выбора количества товаров на странице -->
+  {% for key, value in request.GET.items %}
+    {% if key != 'page' and key != 'page_size' %}
+      <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endif %}
+  {% endfor %}
+  <button type="submit">Применить</button>
+</form>
+
   <nav aria-label="Page navigation" class="my-5">
     <ul class="pagination justify-content-center">
       {% if page_obj.has_previous %}

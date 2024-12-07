@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 
 from product.models import Product, Subcategory, Category
 from django.views.generic import ListView, DetailView
-from .forms import DynamicFilterForm
+from .forms import DynamicFilterForm, PageSizeForm
 
 
 # Сайдбар - Работа сайдбара с категориями
@@ -96,6 +96,8 @@ class CategoryListView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         in_stock = status_check(self)
+        # Название страницы
+        context['page_title'] = 'Категории товаров'
         # Навигация
         context['breadcrumbs'] = [
             {'name': 'Главная страница', 'url': '/'},
@@ -142,6 +144,9 @@ class SubcategoryListView(ListView):
             slug=category_slug,
             is_visible=True
         )
+        # Название страницы
+        context['page_title'] = category.name
+
         # Навигация
         context['breadcrumbs'] = [
             {'name': 'Главная страница', 'url': '/'},
@@ -158,7 +163,6 @@ class ProductListView(ListView):
     model = Product
     template_name = 'pages/product_list.html'
     context_object_name = 'products_list'
-    paginate_by = 10
 
     def setup(self, request, *args, **kwargs) -> None:
         # Убираем параметр page из запроса
@@ -175,7 +179,7 @@ class ProductListView(ListView):
         try:
             page_size = int(page_size)
         except ValueError:
-            page_size = 10  # если параметр некорректный, используем 10 по умолчанию
+            page_size = 10
         return page_size
 
     def get_queryset(self):
@@ -194,7 +198,7 @@ class ProductListView(ListView):
         # Применение фильтров на основе параметров, переданных через GET
         filters = self.request.GET
         for key, value in filters.items():
-            if value and key != 'page':
+            if value and key != 'page' and key != 'page_size':
                 # Фильтрация по полям в JSONField
                 queryset = queryset.filter(
                     Q(params__contains={key: value})
@@ -214,6 +218,8 @@ class ProductListView(ListView):
             slug=self.kwargs['subcategory_slug']
         )
         category = subcategory.category.name
+        # Название страницы
+        context['page_title'] = subcategory.name
         # Навигация
         context['breadcrumbs'] = [
             {'name': 'Главная страница', 'url': '/'},
@@ -230,6 +236,10 @@ class ProductListView(ListView):
             attributes=filterable_attributes
         )
         context['form'] = form
+
+        # Форма для выбора количества товаров на странице
+        page_size_form = PageSizeForm(self.request.GET)
+        context['page_size_form'] = page_size_form
 
         # Сайдбар
         context['sidebar_list'] = get_categories()
@@ -253,6 +263,7 @@ class ProductDetailView(DetailView):
         product = get_object_or_404(Product, pk=self.kwargs['pk'])
         subcategory = product.subcategory
         category = subcategory.category.name
+
         # Навигация
         context['breadcrumbs'] = [
             {'name': 'Главная страница', 'url': '/'},
@@ -273,7 +284,6 @@ class SearchListView(ListView):
     model = Product
     template_name = 'pages/search_list.html'
     context_object_name = 'search_list'
-    paginate_by = 10
 
     def setup(self, request, *args, **kwargs) -> None:
         # Убираем параметр page из запроса
@@ -283,6 +293,15 @@ class SearchListView(ListView):
         # Перезаписываем строку запроса без параметра page
         request.META["QUERY_STRING"] = urlencode(query_params, doseq=True)
         return super().setup(request, *args, **kwargs)
+
+    def get_paginate_by(self, queryset):
+        """Возвращаем количество товаров на странице из GET-параметра `page_size`"""
+        page_size = self.request.GET.get('page_size', 10)
+        try:
+            page_size = int(page_size)
+        except ValueError:
+            page_size = 10
+        return page_size
 
     def get_queryset(self):
         # Отдельный поиск в разделах сайта
@@ -306,6 +325,10 @@ class SearchListView(ListView):
         # Сайдбар
         context['sidebar_list'] = get_categories()
 
+        # Форма для выбора количества товаров на странице
+        page_size_form = PageSizeForm(self.request.GET)
+        context['page_size_form'] = page_size_form
+        context['page_title'] = 'Результаты поиска'
         return context
 
 

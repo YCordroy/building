@@ -4,47 +4,30 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Магазин{% endblock %}</title>
+    <title>{% block title %}{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-      /* Растягиваем контейнер по всей ширине страницы и центрируем все содержимое */
-      .wrapper {
-        display: flex;
-        justify-content: center; /* Центрируем контент по горизонтали */
-        align-items: flex-start; /* Выравниваем по верхнему краю */
-        width: 100%;
-        margin-top: 20px;
-      }
-
-      .layout {
-        display: flex;
-        gap: 20px; /* Отступ между сайдбаром и навигацией */
-      }
-
-      .sidebar {
-        width: 250px; /* Ширина сайдбара */
-      }
-
-      .navigation {
-        flex-grow: 1; /* Навигация будет занимать оставшееся пространство */
-      }
-    </style>
+    <link href="{% static 'css/green_orange.css' %}" rel="stylesheet">
+    <script src="{% static 'js/custom.js' %}"></script>
 </head>
   <body>
     {% include "includes/header.html" %}
-    {% if not error %}
-      <div class="wrapper">
-        <div class="layout">
-          <div class="sidebar">
-            {% include "includes/sidebar.html" %}
-          </div>
-          <div class="navigation">
-            {% include "includes/navigation.html" %}
-          </div>
-        </div>
-      </div>
-    {% endif %}
     <main class="container my-4">
+    {% if not error %}
+        <div class="d-flex">
+            <div class="sidebar-container">
+                {% include "includes/sidebar.html" %}
+            </div>
+
+            <div class="flex-grow-1 ms-3">
+                {% if page_title %}
+                    <h2 class="page-title">{{ page_title }}</h2>
+                {% endif %}
+            </div>
+        </div>
+        {% if request.resolver_match.url_name != "search" %}
+            {% include "includes/navigation.html" %}
+        {% endif %}
+    {% endif %}
         {% block content %}
         {% endblock %}
     </main>
