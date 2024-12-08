@@ -4,18 +4,21 @@
 
 {% block content %}
 <div class="row">
+    {% if form %}
     {% include "includes/filter_sidebar.html" %}
+    {% endif %}
     <div class="col-md-9">
         <div class="row row-cols-1 row-cols-md-3 g-4">
             {% for product in products_list %}
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 custom-card">
                         <img src="{{ product.image.url }}" class="img-fluid me-4" style="max-width: 150px;">
                         <div class="card-body">
                             <h5 class="card-title">{{ product.name }}</h5>
                             <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text">{{ product.price }}</p>
                             <a href="{% url 'pages:product_detail' status=request.resolver_match.kwargs.status category_slug=request.resolver_match.kwargs.category_slug subcategory_slug=request.resolver_match.kwargs.subcategory_slug pk=product.pk%}"
-                               class="btn btn-info">Подробнее</a>
+                               class="btn btn-gray btn-lg py-3 px-4 mt-auto">Подробнее</a>
                         </div>
                     </div>
                 </div>

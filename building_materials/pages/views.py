@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 
 from product.models import Product, Subcategory, Category
 from django.views.generic import ListView, DetailView
-from .forms import DynamicFilterForm, PageSizeForm
+from .forms import DynamicFilterForm
 
 
 # Сайдбар - Работа сайдбара с категориями
@@ -231,15 +231,16 @@ class ProductListView(ListView):
         filterable_attributes = get_filterable_attributes(
             subcategory.product.filter(in_stock=in_stock, is_visible=True)
         )
-        form = DynamicFilterForm(
-            self.request.GET,
-            attributes=filterable_attributes
-        )
-        context['form'] = form
+        if not filterable_attributes:
+            context['form'] = None
+        else:
+            form = DynamicFilterForm(
+                self.request.GET,
+                attributes=filterable_attributes
+            )
 
-        # Форма для выбора количества товаров на странице
-        page_size_form = PageSizeForm(self.request.GET)
-        context['page_size_form'] = page_size_form
+            context['form'] = form
+
 
         # Сайдбар
         context['sidebar_list'] = get_categories()
@@ -325,9 +326,6 @@ class SearchListView(ListView):
         # Сайдбар
         context['sidebar_list'] = get_categories()
 
-        # Форма для выбора количества товаров на странице
-        page_size_form = PageSizeForm(self.request.GET)
-        context['page_size_form'] = page_size_form
         context['page_title'] = 'Результаты поиска'
         return context
 

@@ -1,23 +1,43 @@
 {% if page_obj.has_other_pages %}
-<form method="get">
-  {{ page_size_form.as_p }}  <!-- Форма для выбора количества товаров на странице -->
-  {% for key, value in request.GET.items %}
-    {% if key != 'page' and key != 'page_size' %}
-      <input type="hidden" name="{{ key }}" value="{{ value }}">
-    {% endif %}
-  {% endfor %}
-  <button type="submit">Применить</button>
-</form>
+<nav aria-label="Page navigation" class="my-5">
+  <div class="d-flex justify-content-center align-items-center">
+    <!-- Форма для выбора количества товаров на странице -->
+    <form method="get" class="d-flex align-items-center mr-4">
+      <label for="page_size" class="mr-3 mb-0">Товары на странице:</label>
 
-  <nav aria-label="Page navigation" class="my-5">
-    <ul class="pagination justify-content-center">
+      <div class="btn-group" role="group" aria-label="Товары на странице">
+        <a href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page_size=10{% else %}{{ request.get_full_path }}?page_size=10{% endif %}"
+           class="btn btn-outline-secondary {% if page_size == 10 %}active{% endif %}">
+          10
+        </a>
+        <a href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page_size=20{% else %}{{ request.get_full_path }}?page_size=20{% endif %}"
+           class="btn btn-outline-secondary {% if page_size == 20 %}active{% endif %}">
+          20
+        </a>
+        <a href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page_size=50{% else %}{{ request.get_full_path }}?page_size=50{% endif %}"
+           class="btn btn-outline-secondary {% if page_size == 50 %}active{% endif %}">
+          50
+        </a>
+      </div>
+
+      {% for key, value in request.GET.items %}
+        {% if key != 'page' and key != 'page_size' %}
+          <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endif %}
+      {% endfor %}
+    </form>
+
+    <!-- Пагинация -->
+    <ul class="pagination justify-content-center mb-0">
       {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page=1">Первая</a></li>
         <li class="page-item">
-          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ i }}{% else %}{{ request.get_full_path }}?page={{ i }}{% endif %}">
-            << </a>
+          <a class="page-link" href="?page=1">Первая</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}{% else %}{{ request.get_full_path }}?page={{ page_obj.previous_page_number }}{% endif %}">&lt;&lt;</a>
         </li>
       {% endif %}
+
       {% for i in page_obj.paginator.page_range %}
         {% if page_obj.number == i %}
           <li class="page-item active">
@@ -29,19 +49,17 @@
           </li>
         {% endif %}
       {% endfor %}
+
       {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ i }}{% else %}{{ request.get_full_path }}?page={{ i }}{% endif %}">
-            >>
-          </a>
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.next_page_number }}{% else %}{{ request.get_full_path }}?page={{ page_obj.next_page_number }}{% endif %}">&gt;&gt;</a>
         </li>
         <li class="page-item">
-          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ i }}{% else %}{{ request.get_full_path }}?page={{ i }}{% endif %}">
-            Последняя
-          </a>
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.paginator.num_pages }}{% else %}{{ request.get_full_path }}?page={{ page_obj.paginator.num_pages }}{% endif %}">Последняя</a>
         </li>
       {% endif %}
     </ul>
-  </nav>
+  </div>
+</nav>
 
 {% endif %}

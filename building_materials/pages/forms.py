@@ -11,12 +11,3 @@ class DynamicFilterForm(forms.Form):
                 required=False,
                 label=key.capitalize()
             )
-
-
-class PageSizeForm(forms.Form):
-    page_size = forms.ChoiceField(
-        choices=[(10, '10'), (20, '20'), (30, '30'), (50, '50')],
-        initial=10,
-        required=False,
-        label="Товаров на странице"
-    )

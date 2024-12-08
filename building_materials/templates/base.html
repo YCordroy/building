@@ -9,12 +9,12 @@
     <link href="{% static 'css/green_orange.css' %}" rel="stylesheet">
     <script src="{% static 'js/custom.js' %}"></script>
 </head>
-  <body>
+  <body style="background-color: #F1A160">
     {% include "includes/header.html" %}
     <main class="container my-4">
     {% if not error %}
-        <div class="d-flex">
-            <div class="sidebar-container">
+        <div class="d-flex align-items-start">
+            <div class="sidebar-container position-relative">
                 {% include "includes/sidebar.html" %}
             </div>
 

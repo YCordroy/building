@@ -7,9 +7,9 @@
     {% for category in category_list %}
     <div class="col">
         <!-- Обертываем всю карточку в ссылку -->
-        <a href="{% url 'pages:subcategories' status=request.resolver_match.kwargs.status category_slug=category.slug %}" class="card-link">
+        <a href="{% url 'pages:subcategories' status=request.resolver_match.kwargs.status category_slug=category.slug %}" class="card-top-link">
             <div class="card h-100">
-                <div class="card-body d-flex flex-column" style="background-color: #e0e0e0">
+                <div class="card-body d-flex flex-column custom-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="card-title">{{ category.name }}</h5>
                         <img src="{{ category.image.url }}" class="img-fluid" style="max-width: 50px;">

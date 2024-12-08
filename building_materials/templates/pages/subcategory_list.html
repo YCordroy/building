@@ -3,16 +3,18 @@
 {% block title %}Подкатегории{% endblock %}
 
 {% block content %}
-<div class="row row-cols-1 row-cols-md-3 g-4">
+<div class="row row-cols-1 row-cols-md-3 g-4" style="height: 80vh">
     {% for subcategory in subcategory_list %}
     <div class="col">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">{{ subcategory.name }}</h5>
-                <a href="{% url 'pages:products' status=request.resolver_match.kwargs.status category_slug=request.resolver_match.kwargs.category_slug subcategory_slug=subcategory.slug %}"
-                   class="btn btn-secondary">Перейти</a>
+        <!-- Оборачиваем карточку в ссылку -->
+        <a href="{% url 'pages:products' status=request.resolver_match.kwargs.status category_slug=request.resolver_match.kwargs.category_slug subcategory_slug=subcategory.slug %}" class="card-link">
+            <div class="card h-100 custom-card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ subcategory.name }}</h5>
+                    <button class="btn btn-gray btn-lg py-3 px-4 mt-auto">Перейти</button>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     {% endfor %}
 </div>
