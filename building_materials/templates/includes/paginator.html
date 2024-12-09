@@ -1,21 +1,20 @@
-{% if page_obj.has_other_pages %}
 <nav aria-label="Page navigation" class="my-5">
   <div class="d-flex justify-content-center align-items-center">
     <!-- Форма для выбора количества товаров на странице -->
-    <form method="get" class="d-flex align-items-center mr-4">
-      <label for="page_size" class="mr-3 mb-0">Товары на странице:</label>
+    <form method="get" class="d-flex align-items-center mr-4" style="padding-right: 20px">
+      <label for="page_size" class="mr-3 mb-0">Количество товаров на странице:</label>
 
-      <div class="btn-group" role="group" aria-label="Товары на странице">
+      <div class="btn-group" role="group" style="padding-left: 10px" aria-label="Товары на странице">
         <a href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page_size=10{% else %}{{ request.get_full_path }}?page_size=10{% endif %}"
-           class="btn btn-outline-secondary {% if page_size == 10 %}active{% endif %}">
+          class="btn btn-outline-secondary page-size-custom {% if request.GET.page_size|default:'10' == '10' %}active{% endif %}">
           10
         </a>
         <a href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page_size=20{% else %}{{ request.get_full_path }}?page_size=20{% endif %}"
-           class="btn btn-outline-secondary {% if page_size == 20 %}active{% endif %}">
+          class="btn btn-outline-secondary page-size-custom {% if request.GET.page_size|default:'10' == '20' %}active{% endif %}">
           20
         </a>
         <a href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page_size=50{% else %}{{ request.get_full_path }}?page_size=50{% endif %}"
-           class="btn btn-outline-secondary {% if page_size == 50 %}active{% endif %}">
+          class="btn btn-outline-secondary page-size-custom {% if request.GET.page_size|default:'10' == '50' %}active{% endif %}">
           50
         </a>
       </div>
@@ -61,5 +60,3 @@
     </ul>
   </div>
 </nav>
-
-{% endif %}

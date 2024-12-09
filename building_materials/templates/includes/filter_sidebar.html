@@ -1,19 +1,32 @@
 <div class="col-md-3">
-    <div class="filter-sidebar">
-        <h4>Фильтры</h4>
-        <form method="get">
+    <div class="filter-sidebar p-4 rounded">
+        <h4 class="mb-4">Фильтры</h4>
+        <form method="get" id="filters-form">
             {% for field in form %}
-                <div class="filter-group">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <div class="filter-group mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
                     {{ field }}
                 </div>
             {% endfor %}
 
             {% if request.GET.page_size %}
-            <input type="hidden" name="page_size" value="{{ request.GET.page_size }}">
+                <input type="hidden" name="page_size" value="{{ request.GET.page_size }}">
             {% endif %}
-
-            <button type="submit" class="btn btn-primary">Применить</button>
         </form>
     </div>
 </div>
+
+<script>
+    // Убедимся, что форма и все ее элементы загружены перед добавлением обработчиков
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('filters-form');
+
+        // Отслеживаем изменения в чекбоксах и селектах
+        form.querySelectorAll('input, select').forEach(function(input) {
+            input.addEventListener('change', function() {
+                form.submit();  // Отправляем форму при изменении значения
+            });
+        });
+    });
+</script>
+

@@ -7,13 +7,13 @@
         <div class="row row-cols-1 row-cols-md-3 g-4">
             {% for product in search_list %}
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 custom-card">
                         <img src="{{ product.image.url }}" class="img-fluid me-4" style="max-width: 150px;">
                         <div class="card-body">
                             <h5 class="card-title">{{ product.name }}</h5>
                             <p class="card-text">{{ product.description }}</p>
                             <a href="{% url 'pages:product_detail' status=request.resolver_match.kwargs.status category_slug=product.subcategory.category.slug subcategory_slug=product.subcategory.slug pk=product.pk%}"
-                               class="btn btn-info">Подробнее</a>
+                               class="btn btn-gray btn-info">Подробнее</a>
                         </div>
                     </div>
                 </div>

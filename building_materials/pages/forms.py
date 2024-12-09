@@ -9,5 +9,6 @@ class DynamicFilterForm(forms.Form):
             self.fields[key] = forms.ChoiceField(
                 choices=[('', 'Все')] + [(value, value) for value in values],
                 required=False,
-                label=key.capitalize()
+                label=key.capitalize(),
+                widget=forms.Select(attrs={'class': 'form-control'})
             )

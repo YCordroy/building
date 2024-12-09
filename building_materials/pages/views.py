@@ -168,7 +168,7 @@ class ProductListView(ListView):
         # Убираем параметр page из запроса
         query_params = request.GET.copy()
         query_params.pop("page", None)  # Убираем параметр page, если он есть
-
+        query_params.pop("page_size", None)
         # Перезаписываем строку запроса без параметра page
         request.META["QUERY_STRING"] = urlencode(query_params, doseq=True)
         return super().setup(request, *args, **kwargs)
@@ -241,7 +241,6 @@ class ProductListView(ListView):
 
             context['form'] = form
 
-
         # Сайдбар
         context['sidebar_list'] = get_categories()
 
@@ -290,7 +289,7 @@ class SearchListView(ListView):
         # Убираем параметр page из запроса
         query_params = request.GET.copy()
         query_params.pop("page", None)  # Убираем параметр page, если он есть
-
+        query_params.pop("page_size", None)
         # Перезаписываем строку запроса без параметра page
         request.META["QUERY_STRING"] = urlencode(query_params, doseq=True)
         return super().setup(request, *args, **kwargs)
