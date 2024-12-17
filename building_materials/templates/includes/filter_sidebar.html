@@ -1,23 +1,123 @@
-<div class="col-md-3">
+{% load custom_filters %}
+<div class="col-md-3 mt-3 mt-md-0"> <!-- Добавлен отступ сверху на мобильных устройствах -->
     <div class="filter-sidebar p-4 rounded">
-        <h4 class="mb-4">Фильтры</h4>
-        <form method="get" id="filters-form">
-            {% for field in form %}
-                <div class="filter-group mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                </div>
-            {% endfor %}
+        <h4 class="mb-4" style="color: #9D581F">Фильтры</h4>
 
-            {% if request.GET.page_size %}
-                <input type="hidden" name="page_size" value="{{ request.GET.page_size }}">
-            {% endif %}
-        </form>
+        <!-- Кнопка для сворачивания фильтров на мобильных устройствах -->
+        <button class="btn btn-primary d-md-none mb-4" type="button" data-bs-toggle="collapse" data-bs-target="#filter-collapse" aria-expanded="false" aria-controls="filter-collapse">
+            Фильтры
+        </button>
+
+        <!-- Скрытые фильтры на мобильных -->
+        <div id="filter-collapse" class="collapse d-md-block">
+            <form method="get" id="filters-form">
+                <!-- Фильтр по цене (ручной) -->
+                <div class="filter-group mb-4">
+                    <label class="form-label">Цена</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="number" name="min_price" class="form-control" placeholder="От"
+                               value="{{ request.GET.min_price|default:'' }}">
+                        <input type="number" name="max_price" class="form-control" placeholder="До"
+                               value="{{ request.GET.max_price|default:'' }}">
+                    </div>
+                </div>
+
+                <!-- Динамические фильтры -->
+               {% for field in form %}
+                <div class="filter-group mb-3">
+                    <!-- Генерация уникального ID без пробелов -->
+                    {% with field_id=field.name|replace_space %}
+                    <div class="filter-header d-flex justify-content-between align-items-center">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        <span class="toggle-arrow" data-bs-toggle="collapse" data-bs-target="#collapse-{{ field_id }}"
+                              aria-expanded="true" aria-controls="collapse-{{ field_id }}" style="cursor: pointer;">
+                            <i class="fas fa-chevron-down"></i>
+                        </span>
+                    </div>
+
+                    <!-- Сворачиваемый блок -->
+                    <div id="collapse-{{ field_id }}" class="collapse show">
+                        <div class="filter-options">
+                            {% if field.name == "min_price" or field.name == "max_price" %}
+                                <div class="row g-2">
+                                    <div class="col">
+                                        <input type="number" class="form-control" placeholder="Мин. цена" name="min_price" value="{{ request.GET.min_price }}">
+                                    </div>
+                                    <div class="col">
+                                        <input type="number" class="form-control" placeholder="Макс. цена" name="max_price" value="{{ request.GET.max_price }}">
+                                    </div>
+                                </div>
+                            {% else %}
+                                {% for choice in field.field.choices %}
+                                    <!-- Показать только первые 5 вариантов -->
+                                    {% if forloop.counter <= 5 %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="{{ field.name }}" value="{{ choice.0 }}"
+                                                   id="{{ field.name }}-{{ forloop.counter }}" {% if choice.0 in field.value %}checked{% endif %}>
+                                            <label class="form-check-label" for="{{ field.name }}-{{ forloop.counter }}">
+                                                {{ choice.1 }}
+                                            </label>
+                                        </div>
+                                    {% else %}
+                                        <!-- Скрытые элементы -->
+                                        <div class="form-check hidden-option" style="display:none;">
+                                            <input class="form-check-input" type="checkbox" name="{{ field.name }}" value="{{ choice.0 }}"
+                                                   id="{{ field.name }}-{{ forloop.counter }}" {% if choice.0 in field.value %}checked{% endif %}>
+                                            <label class="form-check-label" for="{{ field.name }}-{{ forloop.counter }}">
+                                                {{ choice.1 }}
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <!-- Кнопка для показа скрытых опций -->
+                        {% if field.field.choices|length > 5 %}
+                        <div class="text-center">
+                            <a href="javascript:void(0);" class="show-more-options" data-target="#collapse-{{ field_id }}">
+                                Показать еще <i class="fas fa-chevron-down"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                </div>
+                {% endfor %}
+
+                {% if request.GET.page_size %}
+                    <input type="hidden" name="page_size" value="{{ request.GET.page_size }}">
+                {% endif %}
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
-    // Убедимся, что форма и все ее элементы загружены перед добавлением обработчиков
+    document.addEventListener('DOMContentLoaded', function () {
+        // Обновляем иконки стрелочек при сворачивании/разворачивании блоков
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function (toggle) {
+            toggle.addEventListener('click', function () {
+                const icon = toggle.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                }
+            });
+        });
+
+        // Показать ещё: отображаем скрытые элементы фильтра
+        document.querySelectorAll('.show-more').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const target = button.dataset.target;
+                document.querySelectorAll(`#${target} .extra-option`).forEach(function (option) {
+                    option.classList.remove('d-none');
+                });
+                button.style.display = 'none';  // Скрываем кнопку "Показать ещё"
+            });
+        });
+    });
+
+        // Убедимся, что форма и все ее элементы загружены перед добавлением обработчиков
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('filters-form');
 
@@ -28,5 +128,32 @@
             });
         });
     });
-</script>
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обрабатываем нажатие на ссылку "Показать еще"
+        document.querySelectorAll('.show-more-options').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var collapseTarget = button.getAttribute('data-target');
+                var collapseElement = document.querySelector(collapseTarget);
+
+                // Ищем скрытые элементы
+                var hiddenOptions = collapseElement.querySelectorAll('.hidden-option');
+
+                // Если кнопка "Показать еще", показываем скрытые элементы
+                if (button.innerHTML.includes('Показать еще')) {
+                    hiddenOptions.forEach(function(option) {
+                        option.style.display = 'block';  // Показываем скрытые элементы
+                    });
+                    button.innerHTML = 'Скрыть <i class="fas fa-chevron-up"></i>';
+                } else {
+                    // Если кнопка "Скрыть", скрываем все элементы после 5
+                    hiddenOptions.forEach(function(option) {
+                        option.style.display = 'none';  // Скрываем элементы
+                    });
+                    button.innerHTML = 'Показать еще <i class="fas fa-chevron-down"></i>';
+                }
+            });
+        });
+    });
+
+</script>

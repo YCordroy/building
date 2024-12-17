@@ -2,6 +2,39 @@
 {% block title %}Результаты поиска{% endblock %}
 {% block content %}
 <div class="container my-4">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-between align-items-center mb-4">
+            <!-- Фильтр по категориям -->
+            <div class="dropdown">
+                <button class="btn btn-secondary btn-gray dropdown-toggle" type="button" id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if request.GET.subcategory %}
+                        {{ selected_subcategory.name }}
+                    {% else %}
+                        Выбрать категорию
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
+                    {% for category, subcategories in category_filters.items %}
+                        <li>
+                            <h6 class="dropdown-header">{{ category }}</h6>
+                            <ul class="list-unstyled">
+                                {% for subcategory in subcategories %}
+                                    <li><a class="dropdown-item" href="{{ request.get_full_path }}&subcategory={{ subcategory.pk }}">{{ subcategory.name }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Поле поиска -->
+            <form method="get" class="d-flex">
+                <input type="text" name="query" class="form-control" value="{{ request.GET.query }}" placeholder="Поиск...">
+                <button type="submit" class="btn btn-gray btn-primary ms-2">Поиск</button>
+            </form>
+        </div>
+    </div>
+
     {% if search_list %}
         <p>Вы искали: <strong>{{ request.GET.query }}</strong></p>
         <div class="row row-cols-1 row-cols-md-3 g-4">
@@ -12,6 +45,7 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ product.name }}</h5>
                             <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text">{{ product.price }}</p>
                             <a href="{% url 'pages:product_detail' status=request.resolver_match.kwargs.status category_slug=product.subcategory.category.slug subcategory_slug=product.subcategory.slug pk=product.pk%}"
                                class="btn btn-gray btn-info">Подробнее</a>
                         </div>
@@ -27,5 +61,6 @@
         {% endif %}
     {% endif %}
 </div>
+
 {% include "includes/paginator.html" %}
 {% endblock %}

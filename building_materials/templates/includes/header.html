@@ -1,13 +1,13 @@
 <header class="bg-dark text-white py-3">
-    <div class="container d-flex justify-content-between align-items-center">
+    <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center">
         {% if request.path == '/' %}
-        <h2>Название фирмы</h2>
+        <h2 class="mb-3 mb-sm-0">Название фирмы</h2>
         {% else %}
-        <a href="{% url 'pages:index' %}" class="company-name text-white text-decoration-none">
+        <a href="{% url 'pages:index' %}" class="company-name text-white text-decoration-none mb-3 mb-sm-0">
             <h2>Название фирмы</h2>
         </a>
             {% if not error %}
-                <form action="{% url 'pages:search' status=request.resolver_match.kwargs.status%}" method="get" class="d-flex me-4">
+                <form action="{% url 'pages:search' status=request.resolver_match.kwargs.status%}" method="get" class="d-flex mb-3 mb-sm-0 w-100 w-sm-auto">
                     <input
                         type="text"
                         name="query"
@@ -19,9 +19,8 @@
             {% endif %}
         {% endif %}
 
-
         <!-- Контактная информация -->
-        <div class="contact-info">
+        <div class="contact-info mt-3 mt-sm-0">
             <span class="fs-5">📞 +7 (123) 456-78-90</span>
         </div>
     </div>

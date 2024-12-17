@@ -168,7 +168,6 @@ class ProductListView(ListView):
         # Убираем параметр page из запроса
         query_params = request.GET.copy()
         query_params.pop("page", None)  # Убираем параметр page, если он есть
-        query_params.pop("page_size", None)
         # Перезаписываем строку запроса без параметра page
         request.META["QUERY_STRING"] = urlencode(query_params, doseq=True)
         return super().setup(request, *args, **kwargs)
@@ -197,22 +196,26 @@ class ProductListView(ListView):
 
         # Применение фильтров на основе параметров, переданных через GET
         filters = self.request.GET
+
+        min_price = filters.get('min_price')
+        max_price = filters.get('max_price')
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
         for key, value in filters.items():
-            if value and key != 'page' and key != 'page_size':
+            if value and key not in ['page', 'page_size', 'min_price', 'max_price']:
                 # Фильтрация по полям в JSONField
                 queryset = queryset.filter(
                     Q(params__contains={key: value})
                 )
-
-        if not queryset:
-            raise Http404('Товары не найдены')
 
         return queryset
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         status = self.kwargs['status']
-        in_stock = status_check(self)
         subcategory = get_object_or_404(
             Subcategory,
             slug=self.kwargs['subcategory_slug']
@@ -229,7 +232,7 @@ class ProductListView(ListView):
         ]
         # Сайдбар с фильтрами
         filterable_attributes = get_filterable_attributes(
-            subcategory.product.filter(in_stock=in_stock, is_visible=True)
+            self.get_queryset()
         )
         if not filterable_attributes:
             context['form'] = None
@@ -289,7 +292,6 @@ class SearchListView(ListView):
         # Убираем параметр page из запроса
         query_params = request.GET.copy()
         query_params.pop("page", None)  # Убираем параметр page, если он есть
-        query_params.pop("page_size", None)
         # Перезаписываем строку запроса без параметра page
         request.META["QUERY_STRING"] = urlencode(query_params, doseq=True)
         return super().setup(request, *args, **kwargs)
@@ -316,14 +318,26 @@ class SearchListView(ListView):
                 subcategory__is_visible=True,
                 subcategory__category__is_visible=True
             )
+            if subcategory := self.request.GET.get('subcategory'):
+                results = results.filter(subcategory=subcategory)
+
         else:
             results = Product.objects.none()
+
         return results
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        categories = get_categories()
         # Сайдбар
-        context['sidebar_list'] = get_categories()
+        context['sidebar_list'] = categories
+        # фильтр по категориям
+        context['category_filters'] = {
+            key: key.subcategories.filter(is_visible=True)
+            for key in categories
+        }
+        if selected_subcategory := self.request.GET.get('subcategory'):
+            context['selected_subcategory'] = Subcategory.objects.get(pk=selected_subcategory)
 
         context['page_title'] = 'Результаты поиска'
         return context

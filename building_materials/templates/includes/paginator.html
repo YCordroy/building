@@ -1,7 +1,7 @@
 <nav aria-label="Page navigation" class="my-5">
-  <div class="d-flex justify-content-center align-items-center">
+  <div class="d-flex flex-column flex-md-row justify-content-center align-items-center">
     <!-- Форма для выбора количества товаров на странице -->
-    <form method="get" class="d-flex align-items-center mr-4" style="padding-right: 20px">
+    <form method="get" class="d-flex align-items-center mb-3 mb-md-0 me-md-4" style="padding-right: 20px">
       <label for="page_size" class="mr-3 mb-0">Количество товаров на странице:</label>
 
       <div class="btn-group" role="group" style="padding-left: 10px" aria-label="Товары на странице">
@@ -30,31 +30,46 @@
     <ul class="pagination justify-content-center mb-0">
       {% if page_obj.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page=1">Первая</a>
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page=1{% else %}{{ request.get_full_path }}?page=1{% endif %}"><<</a>
         </li>
         <li class="page-item">
-          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}{% else %}{{ request.get_full_path }}?page={{ page_obj.previous_page_number }}{% endif %}">&lt;&lt;</a>
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.previous_page_number }}{% else %}{{ request.get_full_path }}?page={{ page_obj.previous_page_number }}{% endif %}"><</a>
         </li>
       {% endif %}
 
-      {% for i in page_obj.paginator.page_range %}
-        {% if page_obj.number == i %}
-          <li class="page-item active">
-            <span class="page-link">{{ i }}</span>
-          </li>
-        {% else %}
-          <li class="page-item">
-            <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ i }}{% else %}{{ request.get_full_path }}?page={{ i }}{% endif %}">{{ i }}</a>
-          </li>
-        {% endif %}
-      {% endfor %}
+      <!-- Текущая страница -->
+      <li class="page-item active">
+        <span class="page-link">{{ page_obj.number }}</span>
+      </li>
 
+      <!-- Следующая страница, если она существует -->
+      {% if page_obj.number|add:1 <= page_obj.paginator.num_pages %}
+        <li class="page-item">
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.number|add:1 }}{% else %}{{ request.get_full_path }}?page={{ page_obj.number|add:1 }}{% endif %}">{{ page_obj.number|add:1 }}</a>
+        </li>
+      {% endif %}
+
+      <!-- Три точки, если между текущей и последней страницей больше одной страницы -->
+      {% if page_obj.number|add:1 < page_obj.paginator.num_pages|add:'-1' %}
+        <li class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+      {% endif %}
+
+      <!-- Последняя страница, если не отображается (и если мы не на предпоследней странице) -->
+      {% if page_obj.number != page_obj.paginator.num_pages and page_obj.number|add:1 != page_obj.paginator.num_pages %}
+        <li class="page-item">
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.paginator.num_pages }}{% else %}{{ request.get_full_path }}?page={{ page_obj.paginator.num_pages }}{% endif %}">{{ page_obj.paginator.num_pages }}</a>
+        </li>
+      {% endif %}
+
+      <!-- Следующая и последняя страницы -->
       {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.next_page_number }}{% else %}{{ request.get_full_path }}?page={{ page_obj.next_page_number }}{% endif %}">&gt;&gt;</a>
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.next_page_number }}{% else %}{{ request.get_full_path }}?page={{ page_obj.next_page_number }}{% endif %}">></a>
         </li>
         <li class="page-item">
-          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.paginator.num_pages }}{% else %}{{ request.get_full_path }}?page={{ page_obj.paginator.num_pages }}{% endif %}">Последняя</a>
+          <a class="page-link" href="{% if '?' in request.get_full_path %}{{ request.get_full_path }}&page={{ page_obj.paginator.num_pages }}{% else %}{{ request.get_full_path }}?page={{ page_obj.paginator.num_pages }}{% endif %}">>></a>
         </li>
       {% endif %}
     </ul>
